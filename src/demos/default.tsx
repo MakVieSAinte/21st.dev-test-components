@@ -43,7 +43,7 @@ const REGIONS_DATA: Region[] = [
   {
     id: "africa",
     label: "Africa",
-    colorClass: "text-red-400",
+    colorClass: "text-neutral-800",
     countries: [
       { code: "cg", name: "Congo" },
       { code: "gh", name: "Ghana" },
@@ -60,8 +60,6 @@ export default function Demo() {
   return (
     <div className="min-h-screen bg-white py-20">
       <InternationalTransfer
-        subtitle="International Transfers"
-        title="Send Money Anywhere, Anytime"
         description="Sending money internationally is as easy as sending it across town. Whether you're helping family abroad, paying for a subscription, or supporting friends in different countries, our fast, secure international transfers make it effortless."
         ctaText="Send Money"
         regions={REGIONS_DATA}
