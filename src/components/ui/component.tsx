@@ -46,7 +46,7 @@ export function InternationalTransfer({
         </header>
       )}
 
-      <section className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
+      <section className="bg-[#fbfefb] rounded-xl border border-slate-100 overflow-hidden">
         <div className="divide-y divide-slate-200/60">
           {regions.map((region) => (
             <RegionRow 
@@ -154,7 +154,7 @@ function RegionRow({
 
 function CountryItem({ country }: { country: Country }) {
   return (
-    <li className="flex items-center gap-3 group/item cursor-default bg-slate-100/80 py-2 pl-2 pr-1 rounded-full border border-transparent hover:border-slate-200 transition-colors">
+    <li className="flex items-center gap-3 group/item cursor-default bg-slate-50 py-2 pl-2 pr-1 rounded-full border border-transparent hover:border-slate-200 transition-colors">
       <div className="w-7 h-7 rounded-full overflow-hidden shadow-sm border border-white relative bg-slate-200 flex-shrink-0 group-hover/item:scale-110 transition-all duration-300">
         <img
           src={`https://flagcdn.com/${country.code}.svg`}

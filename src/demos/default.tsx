@@ -64,6 +64,7 @@ const REGIONS_DATA: Region[] = [
       { code: "za", name: "South Africa" },
       { code: "sn", name: "Senegal" },
       { code: "ma", name: "Morocco" },
+      { code: "cd", name: "DR Congo" },
     ],
   },
 ];
