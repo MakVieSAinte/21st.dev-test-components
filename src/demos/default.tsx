@@ -4,7 +4,7 @@ const REGIONS_DATA: Region[] = [
   {
     id: "europe",
     label: "Europe",
-    colorClass: "text-sky-400",
+    colorClass: "text-sky-600",
     countries: [
       { code: "fr", name: "France" },
       { code: "es", name: "Spain" },
@@ -12,12 +12,16 @@ const REGIONS_DATA: Region[] = [
       { code: "it", name: "Italy" },
       { code: "de", name: "Germany" },
       { code: "be", name: "Belgium" },
+      { code: "pt", name: "Portugal" },
+      { code: "nl", name: "Netherlands" },
+      { code: "ch", name: "Switzerland" },
+      { code: "se", name: "Sweden" },
     ],
   },
   {
     id: "americas",
     label: "Americas",
-    colorClass: "text-emerald-400",
+    colorClass: "text-emerald-600",
     countries: [
       { code: "ca", name: "Canada" },
       { code: "br", name: "Brazil" },
@@ -25,12 +29,14 @@ const REGIONS_DATA: Region[] = [
       { code: "ec", name: "Ecuador" },
       { code: "us", name: "USA" },
       { code: "ar", name: "Argentina" },
+      { code: "co", name: "Colombia" },
+      { code: "cl", name: "Chile" },
     ],
   },
   {
     id: "asia",
     label: "Asia Pacific",
-    colorClass: "text-orange-400",
+    colorClass: "text-orange-600",
     countries: [
       { code: "jp", name: "Japan" },
       { code: "cn", name: "China" },
@@ -38,12 +44,16 @@ const REGIONS_DATA: Region[] = [
       { code: "in", name: "India" },
       { code: "sg", name: "Singapore" },
       { code: "kr", name: "South Korea" },
+      { code: "th", name: "Thailand" },
+      { code: "au", name: "Australia" },
+      { code: "id", name: "Indonesia" },
+      { code: "vn", name: "Vietnam" },
     ],
   },
   {
     id: "africa",
     label: "Africa",
-    colorClass: "text-neutral-800",
+    colorClass: "text-red-600",
     countries: [
       { code: "cg", name: "Congo" },
       { code: "gh", name: "Ghana" },
@@ -52,6 +62,8 @@ const REGIONS_DATA: Region[] = [
       { code: "ke", name: "Kenya" },
       { code: "ng", name: "Nigeria" },
       { code: "za", name: "South Africa" },
+      { code: "sn", name: "Senegal" },
+      { code: "ma", name: "Morocco" },
     ],
   },
 ];

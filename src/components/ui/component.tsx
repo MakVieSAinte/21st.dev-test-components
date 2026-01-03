@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
 
@@ -17,6 +17,8 @@ export interface Region {
 }
 
 interface InternationalTransferProps {
+  subtitle?: string;
+  title?: string;
   description: string;
   ctaText: string;
   regions: Region[];
@@ -29,12 +31,30 @@ export function InternationalTransfer({
   ctaText,
   regions,
 }: InternationalTransferProps) {
+  const [openRegionId, setOpenRegionId] = useState<string | null>(null);
+
+  const toggleRegion = (id: string) => {
+    setOpenRegionId(prevId => (prevId === id ? null : id));
+  };
+
   return (
     <main className="max-w-5xl w-full mx-auto font-sans antialiased">
-      <section className="bg-slate-50 rounded-3xl border border-slate-100 overflow-hidden">
+      {(title || subtitle) && (
+        <header className="text-center mb-12 space-y-3">
+          {subtitle && <h2 className="text-sky-500 text-xs md:text-sm font-bold tracking-widest uppercase">{subtitle}</h2>}
+          {title && <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">{title}</h1>}
+        </header>
+      )}
+
+      <section className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
         <div className="divide-y divide-slate-200/60">
           {regions.map((region) => (
-            <RegionRow key={region.id} region={region} />
+            <RegionRow 
+              key={region.id} 
+              region={region} 
+              isOpen={openRegionId === region.id} 
+              onToggle={() => toggleRegion(region.id)} 
+            />
           ))}
         </div>
       </section>
@@ -51,8 +71,15 @@ export function InternationalTransfer({
   );
 }
 
-function RegionRow({ region }: { region: Region }) {
-  const [isOpen, setIsOpen] = useState(false);
+function RegionRow({ 
+  region, 
+  isOpen, 
+  onToggle 
+}: { 
+  region: Region; 
+  isOpen: boolean; 
+  onToggle: () => void 
+}) {
   const visible = region.countries.slice(0, 4);
   const hidden = region.countries.slice(4);
 
@@ -66,14 +93,12 @@ function RegionRow({ region }: { region: Region }) {
       )}
     >
       <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-12">
-        {/* Label */}
         <div className="md:w-32 flex-shrink-0 pt-1">
           <span className={cn("font-semibold text-sm tracking-wide", region.colorClass)}>
             {region.label}
           </span>
         </div>
 
-        {/* Countries Grid */}
         <div className="flex-grow">
           <ul className="grid grid-cols-2 sm:grid-cols-4 gap-y-6 gap-x-4">
             {visible.map((country) => (
@@ -90,7 +115,7 @@ function RegionRow({ region }: { region: Region }) {
                 transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                 className="overflow-hidden"
               >
-                <div className="h-6" /> {/* Spacer like your col-span-full h-6 */}
+                <div className="h-6" />
                 <ul className="grid grid-cols-2 sm:grid-cols-4 gap-y-6 gap-x-4">
                   {hidden.map((country) => (
                     <CountryItem key={country.code} country={country} />
@@ -101,14 +126,13 @@ function RegionRow({ region }: { region: Region }) {
           </AnimatePresence>
         </div>
 
-        {/* Action Button */}
         {hidden.length > 0 && (
           <div className="md:w-32 flex justify-start md:justify-end flex-shrink-0 pt-1">
             <button
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={onToggle}
               className={cn(
                 "group/btn flex items-center gap-2 text-sm font-medium transition-colors",
-                isOpen ? "text-slate-800" : "text-slate-400 hover:text-slate-800"
+                isOpen ? "text-slate-800" : "text-slate-500 hover:text-slate-800"
               )}
             >
               <span>{isOpen ? "Show less" : "Show all"}</span>
@@ -130,16 +154,16 @@ function RegionRow({ region }: { region: Region }) {
 
 function CountryItem({ country }: { country: Country }) {
   return (
-    <li className="flex items-center gap-3 group/item cursor-default">
-      <div className="w-7 h-7 rounded-full overflow-hidden shadow-sm border border-slate-100 relative bg-slate-200 flex-shrink-0 group-hover/item:scale-110 group-hover/item:shadow-md transition-all duration-300">
+    <li className="flex items-center gap-3 group/item cursor-default bg-slate-100/80 py-2 pl-2 pr-1 rounded-full border border-transparent hover:border-slate-200 transition-colors">
+      <div className="w-7 h-7 rounded-full overflow-hidden shadow-sm border border-white relative bg-slate-200 flex-shrink-0 group-hover/item:scale-110 transition-all duration-300">
         <img
           src={`https://flagcdn.com/${country.code}.svg`}
-          alt={`Drapeau ${country.name}`}
+          alt={country.name}
           loading="lazy"
           className="w-full h-full object-cover"
         />
       </div>
-      <span className="text-slate-500 text-sm font-medium group-hover/item:text-slate-900 transition-colors">
+      <span className="text-slate-500 text-sm font-normal group-hover/item:text-slate-900 transition-colors truncate">
         {country.name}
       </span>
     </li>
