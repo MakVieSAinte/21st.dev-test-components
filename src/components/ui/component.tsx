@@ -6,11 +6,11 @@ import { cn } from "../../lib/utils";
 
 export interface Country {
   code: string;
-  name: string;
+  name: string;  
 }
 
 export interface Region {
-  id: string;
+  id: string; 
   label: string;
   colorClass: string;
   countries: Country[];
