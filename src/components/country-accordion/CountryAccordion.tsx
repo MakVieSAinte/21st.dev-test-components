@@ -1,18 +1,16 @@
-"use client";
-
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "../../lib/utils";
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 export interface Country {
   code: string;
-  name: string;  
+  name: string;
 }
 
 export interface Region {
-  id: string; 
+  id: string;
   label: string;
-  colorClass: string;
   countries: Country[];
 }
 
@@ -34,51 +32,83 @@ export function InternationalTransfer({
   const [openRegionId, setOpenRegionId] = useState<string | null>(null);
 
   const toggleRegion = (id: string) => {
-    setOpenRegionId(prevId => (prevId === id ? null : id));
+    setOpenRegionId(prev => (prev === id ? null : id));
   };
 
   return (
-    <main className="max-w-5xl w-full mx-auto font-sans antialiased">
+    <main className="max-w-4xl w-full mx-auto font-sans antialiased">
       {(title || subtitle) && (
-        <header className="text-center mb-12 space-y-3">
-          {subtitle && <h2 className="text-sky-500 text-xs md:text-sm font-bold tracking-widest uppercase">{subtitle}</h2>}
-          {title && <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">{title}</h1>}
+        <header className="text-center mb-10 space-y-2">
+          {subtitle && (
+            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground">
+              {subtitle}
+            </p>
+          )}
+          {title && (
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+              {title}
+            </h1>
+          )}
         </header>
       )}
 
-      <section className="bg-[#fbfefb] rounded-xl border border-slate-100 overflow-hidden">
-        <div className="divide-y divide-slate-200/60">
+      <section className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="divide-y divide-border">
           {regions.map((region) => (
-            <RegionRow 
-              key={region.id} 
-              region={region} 
-              isOpen={openRegionId === region.id} 
-              onToggle={() => toggleRegion(region.id)} 
+            <RegionRow
+              key={region.id}
+              region={region}
+              isOpen={openRegionId === region.id}
+              onToggle={() => toggleRegion(region.id)}
             />
           ))}
         </div>
       </section>
 
-      <footer className="mt-10 flex flex-col items-center space-y-8">
-        <p className="text-slate-500 text-sm leading-relaxed text-center max-w-2xl">
+      <footer className="mt-8 flex flex-col items-center gap-6">
+        <p className="text-sm text-muted-foreground leading-relaxed text-center max-w-xl">
           {description}
         </p>
-        <button className="bg-slate-900 text-white px-10 py-3.5 rounded-full font-semibold text-sm hover:bg-black hover:scale-105 active:scale-95 transition-all duration-200 shadow-xl shadow-slate-200">
-          {ctaText}
-        </button>
+        <CtaButton label={ctaText} />
       </footer>
     </main>
   );
 }
 
-function RegionRow({ 
-  region, 
-  isOpen, 
-  onToggle 
-}: { 
-  region: Region; 
-  isOpen: boolean; 
-  onToggle: () => void 
+/* ─────────────────────────────────────────
+   CTA Button with sliding arrow
+───────────────────────────────────────── */
+
+function CtaButton({ label }: { label: string }) {
+  return (
+    <button className="group flex items-center gap-2 bg-foreground text-background px-7 py-3 rounded-full font-semibold text-sm hover:opacity-90 active:scale-95 transition-all duration-200 shadow-md">
+      <span>{label}</span>
+      <span className="relative overflow-hidden flex items-center justify-center w-4 h-4">
+        <ArrowRight
+          size={14}
+          className="absolute transition-all duration-300 ease-in-out group-hover:translate-x-5 group-hover:opacity-0"
+        />
+        <ArrowRight
+          size={14}
+          className="absolute -translate-x-5 opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-0 group-hover:opacity-100"
+        />
+      </span>
+    </button>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Region row
+───────────────────────────────────────── */
+
+function RegionRow({
+  region,
+  isOpen,
+  onToggle,
+}: {
+  region: Region;
+  isOpen: boolean;
+  onToggle: () => void;
 }) {
   const visible = region.countries.slice(0, 4);
   const hidden = region.countries.slice(4);
@@ -86,21 +116,21 @@ function RegionRow({
   return (
     <div
       className={cn(
-        "group transition-all duration-300",
-        isOpen 
-          ? "bg-white scale-[1.01] z-10" 
-          : "hover:bg-white"
+        'transition-colors duration-200',
+        isOpen ? 'bg-muted/40' : 'hover:bg-muted/20',
       )}
     >
-      <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-12">
-        <div className="md:w-32 flex-shrink-0 pt-1">
-          <span className={cn("font-semibold text-sm tracking-wide", region.colorClass)}>
+      <div className="p-5 md:p-6 flex flex-col md:flex-row gap-4 md:gap-10">
+        {/* Region label */}
+        <div className="md:w-28 flex-shrink-0 pt-0.5">
+          <span className="text-xs font-semibold tracking-[0.15em] uppercase text-muted-foreground">
             {region.label}
           </span>
         </div>
 
+        {/* Countries grid */}
         <div className="flex-grow">
-          <ul className="grid grid-cols-2 sm:grid-cols-4 gap-y-6 gap-x-4">
+          <ul className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {visible.map((country) => (
               <CountryItem key={country.code} country={country} />
             ))}
@@ -110,13 +140,12 @@ function RegionRow({
             {isOpen && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
+                animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                 className="overflow-hidden"
               >
-                <div className="h-6" />
-                <ul className="grid grid-cols-2 sm:grid-cols-4 gap-y-6 gap-x-4">
+                <ul className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
                   {hidden.map((country) => (
                     <CountryItem key={country.code} country={country} />
                   ))}
@@ -126,24 +155,24 @@ function RegionRow({
           </AnimatePresence>
         </div>
 
+        {/* Toggle button */}
         {hidden.length > 0 && (
-          <div className="md:w-32 flex justify-start md:justify-end flex-shrink-0 pt-1">
+          <div className="md:w-24 flex justify-start md:justify-end flex-shrink-0 pt-0.5">
             <button
               onClick={onToggle}
               className={cn(
-                "group/btn flex items-center gap-2 text-sm font-medium transition-colors",
-                isOpen ? "text-slate-800" : "text-slate-500 hover:text-slate-800"
+                'flex items-center gap-1.5 text-xs font-medium transition-colors duration-200',
+                isOpen ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
               )}
             >
-              <span>{isOpen ? "Show less" : "Show all"}</span>
-              <span 
-                className={cn(
-                  "text-lg leading-none transform transition-transform duration-300 group-hover/btn:scale-110",
-                  isOpen ? "rotate-45" : "rotate-0"
-                )}
+              <span>{isOpen ? 'Show less' : 'Show all'}</span>
+              <motion.span
+                animate={{ rotate: isOpen ? 45 : 0 }}
+                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                className="text-base leading-none"
               >
                 +
-              </span>
+              </motion.span>
             </button>
           </div>
         )}
@@ -152,10 +181,14 @@ function RegionRow({
   );
 }
 
+/* ─────────────────────────────────────────
+   Country pill
+───────────────────────────────────────── */
+
 function CountryItem({ country }: { country: Country }) {
   return (
-    <li className="flex items-center gap-3 group/item cursor-default bg-slate-50 py-2 pl-2 pr-1 rounded-full border border-transparent hover:border-slate-200 transition-colors">
-      <div className="w-7 h-7 rounded-full overflow-hidden shadow-sm border border-white relative bg-slate-200 flex-shrink-0 group-hover/item:scale-110 transition-all duration-300">
+    <li className="group/item flex items-center gap-2 px-2 py-1.5 rounded-lg bg-muted/30 border border-transparent hover:border-border transition-all duration-200 cursor-default">
+      <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 shadow-sm">
         <img
           src={`https://flagcdn.com/${country.code}.svg`}
           alt={country.name}
@@ -163,7 +196,7 @@ function CountryItem({ country }: { country: Country }) {
           className="w-full h-full object-cover"
         />
       </div>
-      <span className="text-slate-500 text-sm font-normal group-hover/item:text-slate-900 transition-colors truncate">
+      <span className="text-xs text-muted-foreground group-hover/item:text-foreground transition-colors truncate">
         {country.name}
       </span>
     </li>

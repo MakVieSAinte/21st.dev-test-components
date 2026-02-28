@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Sun, Moon, Copy, Check } from 'lucide-react';
+import { Sun, Moon, Copy, Check, GripVertical, Info } from 'lucide-react';
 import type { ComponentEntry } from '../registry';
 
 interface DemoLayoutProps {
@@ -11,10 +11,11 @@ interface DemoLayoutProps {
 const MIN_SIDEBAR = 200;
 const MAX_SIDEBAR = 480;
 const DEFAULT_SIDEBAR = 280;
+const MIN_PREVIEW = 320;
 
 export default function DemoLayout({ components }: DemoLayoutProps) {
   const [selectedId, setSelectedId] = useState(components[0]?.id ?? '');
-  const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
+  const [activeTab, setActiveTab] = useState<'preview' | 'code' | 'info'>('preview');
   const [activeFile, setActiveFile] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const [isDark, setIsDark] = useState(() => {
@@ -24,10 +25,19 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
     }
     return true;
   });
+
+  // Sidebar resize
   const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR);
-  const isDragging = useRef(false);
-  const dragStartX = useRef(0);
-  const dragStartWidth = useRef(DEFAULT_SIDEBAR);
+  const isSidebarDragging = useRef(false);
+  const sidebarDragStartX = useRef(0);
+  const sidebarDragStartWidth = useRef(DEFAULT_SIDEBAR);
+
+  // Preview resize
+  const [previewWidth, setPreviewWidth] = useState<number | null>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const isPreviewDragging = useRef(false);
+  const previewDragStartX = useRef(0);
+  const previewDragStartWidth = useRef(0);
 
   const active = components.find(c => c.id === selectedId);
 
@@ -42,34 +52,61 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
     }
   }, [isDark]);
 
-  // When component changes, reset active file to first file
+  // Reset file + preview width when switching components
   useEffect(() => {
     if (active?.files) {
       setActiveFile(Object.keys(active.files)[0] ?? '');
     }
+    setPreviewWidth(null);
   }, [selectedId, active]);
 
-  // Drag handlers
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    isDragging.current = true;
-    dragStartX.current = e.clientX;
-    dragStartWidth.current = sidebarWidth;
+  // ── Sidebar drag ──
+  const onSidebarMouseDown = useCallback((e: React.MouseEvent) => {
+    isSidebarDragging.current = true;
+    sidebarDragStartX.current = e.clientX;
+    sidebarDragStartWidth.current = sidebarWidth;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   }, [sidebarWidth]);
 
+  // ── Preview drag ──
+  const onPreviewMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isPreviewDragging.current = true;
+    previewDragStartX.current = e.clientX;
+    previewDragStartWidth.current =
+      previewContainerRef.current?.offsetWidth ?? 800;
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+  }, []);
+
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
-      const delta = e.clientX - dragStartX.current;
-      const newWidth = Math.min(MAX_SIDEBAR, Math.max(MIN_SIDEBAR, dragStartWidth.current + delta));
-      setSidebarWidth(newWidth);
+      if (isSidebarDragging.current) {
+        const delta = e.clientX - sidebarDragStartX.current;
+        const newW = Math.min(
+          MAX_SIDEBAR,
+          Math.max(MIN_SIDEBAR, sidebarDragStartWidth.current + delta),
+        );
+        setSidebarWidth(newW);
+      }
+      if (isPreviewDragging.current) {
+        const delta = e.clientX - previewDragStartX.current;
+        const newW = Math.max(MIN_PREVIEW, previewDragStartWidth.current + delta);
+        setPreviewWidth(newW);
+      }
     };
     const onMouseUp = () => {
-      if (!isDragging.current) return;
-      isDragging.current = false;
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
+      if (isSidebarDragging.current) {
+        isSidebarDragging.current = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
+      if (isPreviewDragging.current) {
+        isPreviewDragging.current = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+      }
     };
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
@@ -92,7 +129,7 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
-      {/* Sidebar */}
+      {/* ── Sidebar ── */}
       <aside
         className="flex-shrink-0 border-r border-border bg-card flex flex-col h-screen sticky top-0"
         style={{ width: sidebarWidth }}
@@ -131,15 +168,15 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
         </nav>
       </aside>
 
-      {/* Drag handle */}
+      {/* ── Sidebar drag handle ── */}
       <div
         className="w-1 flex-shrink-0 cursor-col-resize hover:bg-blue-500/40 active:bg-blue-500/60 transition-colors group relative"
-        onMouseDown={onMouseDown}
+        onMouseDown={onSidebarMouseDown}
       >
         <div className="absolute inset-y-0 -left-1 -right-1 group-hover:bg-blue-500/20" />
       </div>
 
-      {/* Main content */}
+      {/* ── Main content ── */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {active && (
           <>
@@ -151,28 +188,23 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
-                {/* Preview / Code tabs */}
+                {/* Tabs */}
                 <div className="flex rounded-md border border-border overflow-hidden">
-                  <button
-                    onClick={() => setActiveTab('preview')}
-                    className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                      activeTab === 'preview'
-                        ? 'bg-accent text-accent-foreground'
-                        : 'hover:bg-muted text-muted-foreground'
-                    }`}
-                  >
-                    Preview
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('code')}
-                    className={`px-3 py-1.5 text-sm font-medium transition-colors border-l border-border ${
-                      activeTab === 'code'
-                        ? 'bg-accent text-accent-foreground'
-                        : 'hover:bg-muted text-muted-foreground'
-                    }`}
-                  >
-                    Code
-                  </button>
+                  {(['preview', 'code', 'info'] as const).map((tab, i) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className={`px-3 py-1.5 text-sm font-medium transition-colors capitalize ${
+                        i > 0 ? 'border-l border-border' : ''
+                      } ${
+                        activeTab === tab
+                          ? 'bg-accent text-accent-foreground'
+                          : 'hover:bg-muted text-muted-foreground'
+                      }`}
+                    >
+                      {tab === 'info' ? <Info size={14} /> : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    </button>
+                  ))}
                 </div>
 
                 {/* Theme toggle */}
@@ -188,15 +220,59 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
 
             {/* Content area */}
             <div className="flex-1 overflow-auto">
-              {activeTab === 'preview' ? (
-                <div className="p-8 min-h-full">
-                  <div className="rounded-lg border border-border bg-muted/20 p-8 min-h-[400px] flex items-start justify-center">
-                    {Component && <Component />}
+              {/* ── PREVIEW TAB ── */}
+              {activeTab === 'preview' && (
+                <div className="p-6 min-h-full">
+                  {/* Width indicator */}
+                  {previewWidth && (
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border">
+                        {previewWidth}px
+                      </span>
+                      <button
+                        onClick={() => setPreviewWidth(null)}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Resizable preview container */}
+                  <div className="flex items-start gap-1">
+                    <div
+                      ref={previewContainerRef}
+                      className="rounded-lg border border-border bg-muted/20 min-h-[400px] overflow-auto"
+                      style={{
+                        width: previewWidth ? `${previewWidth}px` : '100%',
+                        minWidth: `${MIN_PREVIEW}px`,
+                        maxWidth: '100%',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <div className="p-8 flex items-start justify-center">
+                        {Component && <Component />}
+                      </div>
+                    </div>
+
+                    {/* Drag handle for preview resize */}
+                    <div
+                      className="flex-shrink-0 flex flex-col items-center justify-center h-16 self-center cursor-ew-resize group px-0.5 mt-[200px]"
+                      onMouseDown={onPreviewMouseDown}
+                      title="Drag to resize preview"
+                    >
+                      <GripVertical
+                        size={16}
+                        className="text-border group-hover:text-blue-500 transition-colors"
+                      />
+                    </div>
                   </div>
                 </div>
-              ) : (
+              )}
+
+              {/* ── CODE TAB ── */}
+              {activeTab === 'code' && (
                 <div className="flex flex-col h-full">
-                  {/* File tabs + copy button */}
                   <div className="flex items-center justify-between border-b border-border px-4 py-2 bg-card flex-shrink-0">
                     <div className="flex gap-1">
                       {fileNames.map((fname) => (
@@ -231,7 +307,6 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
                     </button>
                   </div>
 
-                  {/* Syntax highlighter */}
                   <div className="flex-1 overflow-auto">
                     <SyntaxHighlighter
                       language="tsx"
@@ -251,10 +326,64 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
                   </div>
                 </div>
               )}
+
+              {/* ── INFO TAB ── */}
+              {activeTab === 'info' && (
+                <div className="p-8 max-w-xl">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-5">
+                    Component Info
+                  </h3>
+
+                  <div className="space-y-4 mb-8">
+                    <InfoField label="Name" value={active.name} />
+                    <InfoField label="Slug" value={active.id} mono />
+                    <InfoField label="Description" value={active.description} />
+                    <InfoField label="Component Type" value="registry:ui" mono />
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                    Demos
+                  </h3>
+
+                  <ul className="space-y-2">
+                    {fileNames.map((fname) => (
+                      <li
+                        key={fname}
+                        className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-border bg-card"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 flex-shrink-0" />
+                        <span className="text-sm font-mono text-foreground/80">{fname}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </>
         )}
       </main>
+    </div>
+  );
+}
+
+/* ── Info field ── */
+function InfoField({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-[120px_1fr] gap-4 items-start">
+      <span className="text-xs font-medium text-muted-foreground pt-0.5">{label}</span>
+      <span
+        className={`text-sm text-foreground break-words ${mono ? 'font-mono' : ''}`}
+      >
+        {value}
+      </span>
     </div>
   );
 }

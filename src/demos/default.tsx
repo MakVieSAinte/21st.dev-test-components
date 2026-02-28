@@ -4,7 +4,6 @@ const REGIONS_DATA: Region[] = [
   {
     id: "europe",
     label: "Europe",
-    colorClass: "text-sky-600",
     countries: [
       { code: "fr", name: "France" },
       { code: "es", name: "Spain" },
@@ -21,7 +20,6 @@ const REGIONS_DATA: Region[] = [
   {
     id: "americas",
     label: "Americas",
-    colorClass: "text-emerald-600",
     countries: [
       { code: "ca", name: "Canada" },
       { code: "br", name: "Brazil" },
@@ -36,7 +34,6 @@ const REGIONS_DATA: Region[] = [
   {
     id: "asia",
     label: "Asia Pacific",
-    colorClass: "text-orange-600",
     countries: [
       { code: "jp", name: "Japan" },
       { code: "cn", name: "China" },
@@ -53,7 +50,6 @@ const REGIONS_DATA: Region[] = [
   {
     id: "africa",
     label: "Africa",
-    colorClass: "text-red-600",
     countries: [
       { code: "cg", name: "Congo" },
       { code: "gh", name: "Ghana" },
@@ -71,7 +67,7 @@ const REGIONS_DATA: Region[] = [
 
 export default function Demo() {
   return (
-    <div className="min-h-screen bg-white py-20">
+    <div className="min-h-screen py-20">
       <InternationalTransfer
         description="Sending money internationally is as easy as sending it across town. Whether you're helping family abroad, paying for a subscription, or supporting friends in different countries, our fast, secure international transfers make it effortless."
         ctaText="Send Money"

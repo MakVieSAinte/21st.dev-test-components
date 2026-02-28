@@ -1,79 +1,83 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  SiReact,
+  SiNextdotjs,
+  SiAngular,
+  SiFlutter,
+  SiSvelte,
+  SiVuedotjs,
+  SiNuxtdotjs,
+  SiRemix,
+  SiAstro,
+  SiTypescript,
+} from 'react-icons/si';
+import { cn } from '../../lib/utils';
 
 const brands = [
-  { id: 'react', name: 'React', icon: '⚛️' },
-  { id: 'vue', name: 'Vue', icon: '💚' },
-  { id: 'angular', name: 'Angular', icon: '🅰️' },
-  { id: 'svelte', name: 'Svelte', icon: '🔥' },
-  { id: 'next', name: 'Next.js', icon: '▲' },
-  { id: 'nuxt', name: 'Nuxt', icon: '💚' },
-  { id: 'remix', name: 'Remix', icon: '🎵' },
-  { id: 'astro', name: 'Astro', icon: '🚀' },
+  { id: 'react',      name: 'React',      Icon: SiReact },
+  { id: 'next',       name: 'Next.js',    Icon: SiNextdotjs },
+  { id: 'angular',    name: 'Angular',    Icon: SiAngular },
+  { id: 'flutter',    name: 'Flutter',    Icon: SiFlutter },
+  { id: 'svelte',     name: 'Svelte',     Icon: SiSvelte },
+  { id: 'vue',        name: 'Vue',        Icon: SiVuedotjs },
+  { id: 'nuxt',       name: 'Nuxt',       Icon: SiNuxtdotjs },
+  { id: 'remix',      name: 'Remix',      Icon: SiRemix },
+  { id: 'astro',      name: 'Astro',      Icon: SiAstro },
+  { id: 'typescript', name: 'TypeScript', Icon: SiTypescript },
 ];
 
 export default function HoverBrandLogo() {
-  const [hoveredBrand, setHoveredBrand] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const activeBrand = brands.find(b => b.id === hoveredId);
 
   return (
-    <div className="w-full">
-      <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold mb-2">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 sm:gap-12 lg:gap-20 w-full max-w-4xl mx-auto px-8 py-10">
+      {/* Left: text */}
+      <div className="flex-shrink-0 min-w-[200px]">
+        <p className="text-sm text-muted-foreground font-medium mb-1 tracking-tight">
           Use Supabase with
-          <br />
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={hoveredBrand || 'any'}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent"
-            >
-              {hoveredBrand
-                ? brands.find(b => b.id === hoveredBrand)?.name
-                : 'any framework'}
-            </motion.span>
-          </AnimatePresence>
-        </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          Seamlessly integrate with your favorite framework
         </p>
+        <div className="h-9 overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={hoveredId ?? 'default'}
+              initial={{ y: 12, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -12, opacity: 0 }}
+              transition={{ duration: 0.16, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="text-[28px] font-bold text-foreground leading-9 tracking-tight"
+            >
+              {activeBrand?.name ?? 'any framework'}
+            </motion.p>
+          </AnimatePresence>
+        </div>
       </div>
 
-      <motion.div
-        className="grid grid-cols-5 gap-3"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ staggerChildren: 0.08, delayChildren: 0.2 }}
-      >
-        {brands.map((brand) => (
-          <motion.button
-            key={brand.id}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            onMouseEnter={() => setHoveredBrand(brand.id)}
-            onMouseLeave={() => setHoveredBrand(null)}
-            whileHover={{ scale: 1.15 }}
-            className={`h-20 rounded-lg border-2 transition-all flex items-center justify-center text-3xl font-bold ${
-              hoveredBrand === brand.id
-                ? 'border-cyan-500 bg-cyan-500/10'
-                : hoveredBrand && hoveredBrand !== brand.id
-                ? 'border-border opacity-30'
-                : 'border-border hover:border-muted-foreground'
-            }`}
-          >
-            <motion.div
-              animate={{
-                scale: hoveredBrand === brand.id ? 1.2 : 1,
-              }}
-              transition={{ duration: 0.3 }}
+      {/* Right: icon row */}
+      <div className="flex items-center gap-0.5 flex-wrap">
+        {brands.map(({ id, name, Icon }) => {
+          const isActive = hoveredId === id;
+          const isDimmed = hoveredId !== null && !isActive;
+          return (
+            <button
+              key={id}
+              aria-label={name}
+              className={cn(
+                'p-2.5 rounded-lg border transition-all duration-200',
+                isActive
+                  ? 'border-foreground/30 text-foreground bg-foreground/5'
+                  : 'border-transparent text-foreground/30',
+                isDimmed ? 'opacity-40' : '',
+              )}
+              onMouseEnter={() => setHoveredId(id)}
+              onMouseLeave={() => setHoveredId(null)}
             >
-              {brand.icon}
-            </motion.div>
-          </motion.button>
-        ))}
-      </motion.div>
+              <Icon size={20} />
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -3,8 +3,7 @@ import { InternationalTransfer, type Region } from './CountryAccordion';
 const regions: Region[] = [
   {
     id: 'eu',
-    label: 'EUROPE',
-    colorClass: 'text-blue-600',
+    label: 'Europe',
     countries: [
       { code: 'de', name: 'Germany' },
       { code: 'fr', name: 'France' },
@@ -18,8 +17,7 @@ const regions: Region[] = [
   },
   {
     id: 'asia',
-    label: 'ASIA',
-    colorClass: 'text-amber-600',
+    label: 'Asia Pacific',
     countries: [
       { code: 'jp', name: 'Japan' },
       { code: 'cn', name: 'China' },
@@ -33,8 +31,7 @@ const regions: Region[] = [
   },
   {
     id: 'americas',
-    label: 'AMERICAS',
-    colorClass: 'text-green-600',
+    label: 'Americas',
     countries: [
       { code: 'us', name: 'United States' },
       { code: 'ca', name: 'Canada' },
@@ -50,10 +47,10 @@ const regions: Region[] = [
 
 export default function CountryAccordionDemo() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 py-12 px-4">
+    <div className="min-h-screen py-12 px-4">
       <InternationalTransfer
-        subtitle="Global Coverage"
-        title="International Money Transfer"
+        subtitle=""
+        title=""
         description="Send money to friends and family in over 200 countries and territories. Competitive rates and fast transfers with real-time tracking."
         ctaText="Start Sending"
         regions={regions}
