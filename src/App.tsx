@@ -1,16 +1,9 @@
-import Demo from "./demos/default.tsx";
-import './App.css'
-import './index.css'
+import './index.css';
+import { componentsList } from './registry';
+import DemoLayout from './layout/DemoLayout';
 
 function App() {
-
-  return (
-    <>
-      <div className="min-h-screen bg-white">
-      <Demo />
-    </div>
-    </>
-  )
+  return <DemoLayout components={componentsList} />;
 }
 
-export default App
+export default App;

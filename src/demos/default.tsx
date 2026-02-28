@@ -1,4 +1,4 @@
-import { InternationalTransfer, type Region } from "../components/ui/component";
+import { InternationalTransfer, type Region } from "../components/country-accordion";
 
 const REGIONS_DATA: Region[] = [
   {
