@@ -32,7 +32,7 @@ const DEFAULT_MEMBERS: TeamMember[] = [
     id: '3',
     name: 'Osiris Balonga',
     role: 'LEAD FRONT-END',
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFhhzsHta7nCAqbzg55bw6EGMr0ViWrDhEyA&s',
+    image: 'https://media.licdn.com/dms/image/v2/D4D03AQGVqrPPAGHtoQ/profile-displayphoto-scale_200_200/B4DZwhAkjaHwAY-/0/1770080338529?e=2147483647&v=beta&t=q-_6p1VCJ8NN8eHj9zUFwJZds_XpKez9Hy14SAIDp4M',
     social: { twitter: '#', linkedin: '#' },
   },
   {
@@ -250,7 +250,7 @@ function MemberRow({
       </div>
 
       {/* Role */}
-      <p className="mt-1.5 pl-[22px] text-[9px] md:text-[10px] font-mono font-medium uppercase tracking-[0.2em] text-muted-foreground">
+      <p className="mt-1.5 pl-[27px] text-[9px] md:text-[10px] font-mono font-medium uppercase tracking-[0.2em] text-muted-foreground">
         {member.role}
       </p>
     </div>

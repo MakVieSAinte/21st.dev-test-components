@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Sun, Moon, Copy, Check, GripVertical, Info, Maximize2, Minimize2 } from 'lucide-react';
-import type { ComponentEntry } from '../registry';
+import type { ComponentEntry, MediaItem } from '../registry';
 
 interface DemoLayoutProps {
   components: ComponentEntry[];
@@ -76,6 +76,18 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [isFullscreen]);
+
+  // Lightbox for media preview (image / video)
+  const [lightboxItem, setLightboxItem] = useState<MediaItem | null>(null);
+
+  // ESC to close lightbox
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && lightboxItem) setLightboxItem(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxItem]);
 
   // ── Sidebar drag ──
   const onSidebarMouseDown = useCallback((e: React.MouseEvent) => {
@@ -437,7 +449,10 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
                         {active.media.map((item, i) => (
                           <div
                             key={i}
-                            className="rounded-lg border border-border overflow-hidden bg-muted/30 aspect-video relative group"
+                            onClick={() => setLightboxItem(item)}
+                            role="button"
+                            tabIndex={0}
+                            className="rounded-lg border border-border overflow-hidden bg-muted/30 aspect-video relative group cursor-pointer"
                           >
                             {item.type === 'video' ? (
                               <video
@@ -471,6 +486,39 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
                         ))}
                       </div>
                     </>
+                  )}
+                  {/* Lightbox modal for clicked media */}
+                  {lightboxItem && (
+                    <div
+                      className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-6"
+                      onClick={() => setLightboxItem(null)}
+                      role="dialog"
+                      aria-modal="true"
+                    >
+                      <div className="relative max-w-[90vw] max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
+                        {lightboxItem.type === 'video' ? (
+                          <video
+                            src={lightboxItem.url}
+                            controls
+                            autoPlay
+                            className="w-full h-auto max-h-[90vh] bg-black rounded"
+                          />
+                        ) : (
+                          <img
+                            src={lightboxItem.url}
+                            alt={lightboxItem.alt}
+                            className="w-full h-auto max-h-[90vh] object-contain rounded bg-black"
+                          />
+                        )}
+                        <button
+                          onClick={() => setLightboxItem(null)}
+                          className="absolute top-3 right-3 bg-black/60 text-white rounded-full p-2"
+                          aria-label="Close preview"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               )}
