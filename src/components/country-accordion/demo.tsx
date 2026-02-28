@@ -49,8 +49,8 @@ export default function CountryAccordionDemo() {
   return (
     <div className="min-h-screen py-12 px-4">
       <InternationalTransfer
-        subtitle=""
-        title=""
+        subtitle="Global Coverage"
+        title="International Money Transfer"
         description="Send money to friends and family in over 200 countries and territories. Competitive rates and fast transfers with real-time tracking."
         ctaText="Start Sending"
         regions={regions}

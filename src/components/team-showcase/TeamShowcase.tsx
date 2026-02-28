@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaLinkedinIn, FaTwitter } from 'react-icons/fa';
 import { cn } from '../../lib/utils';
 
 export interface TeamMember {
@@ -6,6 +7,10 @@ export interface TeamMember {
   name: string;
   role: string;
   image: string;
+  social?: {
+    twitter?: string;
+    linkedin?: string;
+  };
 }
 
 const DEFAULT_MEMBERS: TeamMember[] = [
@@ -14,36 +19,42 @@ const DEFAULT_MEMBERS: TeamMember[] = [
     name: 'Chadrack',
     role: 'DIRECTEUR DE LA PHOTOGRAPHIE',
     image: 'https://media.licdn.com/dms/image/v2/D4D03AQFnmLdpZW78yA/profile-displayphoto-scale_200_200/B4DZvM8NB2JMAY-/0/1768669895649?e=2147483647&v=beta&t=5VGAB-2gYupLNaHvJHECollR25THd-3oR5wngGlQiY4',
+    social: { twitter: '#', linkedin: '#' },
   },
   {
     id: '2',
     name: 'Mak VieSAinte',
     role: 'FOUNDER',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2vnSxNNVGZV2MXRjlGELl-NgLl5kXdpDR6A&s',
+    social: { twitter: '#', linkedin: '#' },
   },
   {
     id: '3',
     name: 'Osiris Balonga',
     role: 'LEAD FRONT-END',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFhhzsHta7nCAqbzg55bw6EGMr0ViWrDhEyA&s',
+    social: { twitter: '#', linkedin: '#' },
   },
   {
     id: '4',
     name: 'Jacques',
     role: 'PRODUCT OWNER',
     image: 'https://media.licdn.com/dms/image/v2/D4D03AQE-Z7-S1LSYNQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1724143166545?e=2147483647&v=beta&t=6IPCwgOzblGt4p2fEdnY74gMbLyRHii5Ite3A39qQsY',
+    social: { linkedin: '#' },
   },
   {
     id: '5',
     name: 'Riche Makso',
     role: 'CTO - PRODUCT DESIGNER',
     image: 'https://media.licdn.com/dms/image/v2/D4D03AQEkTAbZLlSrLg/profile-displayphoto-scale_200_200/B4DZoHdu8BGgAY-/0/1761061833315?e=2147483647&v=beta&t=Rg1dBTvq9X2heyhuhBwG2DsEkG65v0vQ35hF2FSeYns',
+    social: { twitter: '#', linkedin: '#' },
   },
   {
     id: '6',
     name: 'Jemima',
     role: 'MAKE-UP ARTISTE',
     image: 'https://i.pravatar.cc/400?img=16',
+    social: { instagram: '#' } as TeamMember['social'],
   },
 ];
 
@@ -118,7 +129,7 @@ export default function TeamShowcase({ members = DEFAULT_MEMBERS }: TeamShowcase
 }
 
 /* ─────────────────────────────────────────
-   Photo card — others stay b&w, no dimming
+   Photo card — slight dim on non-hovered
 ───────────────────────────────────────── */
 
 function PhotoCard({
@@ -133,10 +144,15 @@ function PhotoCard({
   onHover: (id: string | null) => void;
 }) {
   const isActive = hoveredId === member.id;
+  const isDimmed = hoveredId !== null && !isActive;
 
   return (
     <div
-      className={cn('overflow-hidden rounded-xl cursor-pointer flex-shrink-0', className)}
+      className={cn(
+        'overflow-hidden rounded-xl cursor-pointer flex-shrink-0 transition-opacity duration-400',
+        className,
+        isDimmed ? 'opacity-60' : 'opacity-100',
+      )}
       onMouseEnter={() => onHover(member.id)}
       onMouseLeave={() => onHover(null)}
     >
@@ -153,7 +169,7 @@ function PhotoCard({
 }
 
 /* ─────────────────────────────────────────
-   Member name row
+   Member name row + social icons
 ───────────────────────────────────────── */
 
 function MemberRow({
@@ -167,6 +183,7 @@ function MemberRow({
 }) {
   const isActive = hoveredId === member.id;
   const isDimmed = hoveredId !== null && !isActive;
+  const hasSocial = member.social?.twitter ?? member.social?.linkedin;
 
   return (
     <div
@@ -177,6 +194,7 @@ function MemberRow({
       onMouseEnter={() => onHover(member.id)}
       onMouseLeave={() => onHover(null)}
     >
+      {/* Name + social icons row */}
       <div className="flex items-center gap-2.5">
         <span
           className={cn(
@@ -192,7 +210,46 @@ function MemberRow({
         >
           {member.name}
         </span>
+
+        {/* Social icons — slide in on hover */}
+        {hasSocial && (
+          <div
+            className={cn(
+              'flex items-center gap-1.5 ml-0.5 transition-all duration-200',
+              isActive
+                ? 'opacity-100 translate-x-0'
+                : 'opacity-0 -translate-x-2 pointer-events-none',
+            )}
+          >
+            {member.social?.twitter && (
+              <a
+                href={member.social.twitter}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-all duration-150 hover:scale-110"
+                title="X / Twitter"
+              >
+                <FaTwitter size={10} />
+              </a>
+            )}
+            {member.social?.linkedin && (
+              <a
+                href={member.social.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-all duration-150 hover:scale-110"
+                title="LinkedIn"
+              >
+                <FaLinkedinIn size={10} />
+              </a>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Role */}
       <p className="mt-1.5 pl-[22px] text-[9px] md:text-[10px] font-mono font-medium uppercase tracking-[0.2em] text-muted-foreground">
         {member.role}
       </p>

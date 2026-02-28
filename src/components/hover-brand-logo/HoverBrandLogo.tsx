@@ -32,21 +32,21 @@ export default function HoverBrandLogo() {
   const activeBrand = brands.find(b => b.id === hoveredId);
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-8 sm:gap-12 lg:gap-20 w-full max-w-4xl mx-auto px-8 py-10">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-5 lg:gap-16 w-full max-w-5xl mx-auto px-3 sm:px-8 py-10">
       {/* Left: text */}
-      <div className="flex-shrink-0 min-w-[200px]">
-        <p className="text-sm text-muted-foreground font-medium mb-1 tracking-tight">
-          Use Supabase with
+      <div className="flex-shrink-0 w-[200px]">
+        <p className="text-base text-muted-foreground font-medium mb-1.5 tracking-tight">
+          Build your app with
         </p>
-        <div className="h-9 overflow-hidden">
+        <div className="h-10 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.p
               key={hoveredId ?? 'default'}
-              initial={{ y: 12, opacity: 0 }}
+              initial={{ y: 14, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -12, opacity: 0 }}
+              exit={{ y: -14, opacity: 0 }}
               transition={{ duration: 0.16, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="text-[28px] font-bold text-foreground leading-9 tracking-tight"
+              className="text-[23px] sm:text-[27px] font-bold text-foreground leading-10 tracking-tight"
             >
               {activeBrand?.name ?? 'any framework'}
             </motion.p>
@@ -54,8 +54,8 @@ export default function HoverBrandLogo() {
         </div>
       </div>
 
-      {/* Right: icon row */}
-      <div className="flex items-center gap-0.5 flex-wrap">
+      {/* Right: icon grid — wraps on small screens */}
+      <div className="flex items-center gap-1 flex-wrap max-w-full sm:max-w-none">
         {brands.map(({ id, name, Icon }) => {
           const isActive = hoveredId === id;
           const isDimmed = hoveredId !== null && !isActive;
@@ -64,7 +64,7 @@ export default function HoverBrandLogo() {
               key={id}
               aria-label={name}
               className={cn(
-                'p-2.5 rounded-lg border transition-all duration-200',
+                'p-2.5 sm:p-3 rounded-lg border transition-all duration-200',
                 isActive
                   ? 'border-foreground/30 text-foreground bg-foreground/5'
                   : 'border-transparent text-foreground/30',
@@ -73,7 +73,8 @@ export default function HoverBrandLogo() {
               onMouseEnter={() => setHoveredId(id)}
               onMouseLeave={() => setHoveredId(null)}
             >
-              <Icon size={20} />
+              <Icon size={22} className="sm:hidden" />
+              <Icon size={25} className="hidden sm:block" />
             </button>
           );
         })}

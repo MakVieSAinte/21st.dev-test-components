@@ -36,16 +36,16 @@ export function InternationalTransfer({
   };
 
   return (
-    <main className="max-w-4xl w-full mx-auto font-sans antialiased">
+    <main className="max-w-4xl w-full mx-auto font-sans antialiased px-4 sm:px-6">
       {(title || subtitle) && (
-        <header className="text-center mb-10 space-y-2">
+        <header className="text-center mb-8 sm:mb-10 space-y-2">
           {subtitle && (
             <p className="text-xs font-semibold tracking-[0.2em] uppercase text-muted-foreground">
               {subtitle}
             </p>
           )}
           {title && (
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground tracking-tight">
               {title}
             </h1>
           )}
@@ -65,8 +65,8 @@ export function InternationalTransfer({
         </div>
       </section>
 
-      <footer className="mt-8 flex flex-col items-center gap-6">
-        <p className="text-sm text-muted-foreground leading-relaxed text-center max-w-xl">
+      <footer className="mt-6 sm:mt-8 flex flex-col items-center gap-5 sm:gap-6">
+        <p className="text-sm text-muted-foreground leading-relaxed text-center max-w-xl px-2">
           {description}
         </p>
         <CtaButton label={ctaText} />
@@ -120,17 +120,36 @@ function RegionRow({
         isOpen ? 'bg-muted/40' : 'hover:bg-muted/20',
       )}
     >
-      <div className="p-5 md:p-6 flex flex-col md:flex-row gap-4 md:gap-10">
-        {/* Region label */}
-        <div className="md:w-28 flex-shrink-0 pt-0.5">
+      <div className="p-4 sm:p-5 md:p-6 flex flex-col md:flex-row gap-3 md:gap-10">
+        {/* Region label + toggle on mobile */}
+        <div className="flex items-center justify-between md:block md:w-28 flex-shrink-0 pt-0.5">
           <span className="text-xs font-semibold tracking-[0.15em] uppercase text-muted-foreground">
             {region.label}
           </span>
+          {/* Toggle — inline on mobile, hidden on md (separate column) */}
+          {hidden.length > 0 && (
+            <button
+              onClick={onToggle}
+              className={cn(
+                'md:hidden flex items-center gap-1.5 text-xs font-medium transition-colors duration-200',
+                isOpen ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              <span>{isOpen ? 'Less' : 'More'}</span>
+              <motion.span
+                animate={{ rotate: isOpen ? 45 : 0 }}
+                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                className="text-base leading-none"
+              >
+                +
+              </motion.span>
+            </button>
+          )}
         </div>
 
         {/* Countries grid */}
         <div className="flex-grow">
-          <ul className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {visible.map((country) => (
               <CountryItem key={country.code} country={country} />
             ))}
@@ -145,7 +164,7 @@ function RegionRow({
                 transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                 className="overflow-hidden"
               >
-                <ul className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
                   {hidden.map((country) => (
                     <CountryItem key={country.code} country={country} />
                   ))}
@@ -155,9 +174,9 @@ function RegionRow({
           </AnimatePresence>
         </div>
 
-        {/* Toggle button */}
+        {/* Toggle button — desktop only (right column) */}
         {hidden.length > 0 && (
-          <div className="md:w-24 flex justify-start md:justify-end flex-shrink-0 pt-0.5">
+          <div className="hidden md:flex md:w-24 justify-end flex-shrink-0 pt-0.5">
             <button
               onClick={onToggle}
               className={cn(

@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Sun, Moon, Copy, Check, GripVertical, Info } from 'lucide-react';
+import { Sun, Moon, Copy, Check, GripVertical, Info, Maximize2, Minimize2 } from 'lucide-react';
 import type { ComponentEntry } from '../registry';
 
 interface DemoLayoutProps {
@@ -13,11 +13,19 @@ const MAX_SIDEBAR = 480;
 const DEFAULT_SIDEBAR = 280;
 const MIN_PREVIEW = 320;
 
+function getLanguage(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase() ?? '';
+  if (ext === 'css') return 'css';
+  if (ext === 'ts') return 'typescript';
+  return 'tsx';
+}
+
 export default function DemoLayout({ components }: DemoLayoutProps) {
   const [selectedId, setSelectedId] = useState(components[0]?.id ?? '');
   const [activeTab, setActiveTab] = useState<'preview' | 'code' | 'info'>('preview');
   const [activeFile, setActiveFile] = useState<string>('');
   const [copied, setCopied] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark' ||
@@ -59,6 +67,15 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
     }
     setPreviewWidth(null);
   }, [selectedId, active]);
+
+  // ESC to exit fullscreen
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) setIsFullscreen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isFullscreen]);
 
   // ── Sidebar drag ──
   const onSidebarMouseDown = useCallback((e: React.MouseEvent) => {
@@ -127,6 +144,38 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
   const fileNames = active ? Object.keys(active.files) : [];
   const currentCode = active?.files[activeFile] ?? '';
 
+  // ── Fullscreen overlay ──
+  if (isFullscreen && Component) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background text-foreground flex flex-col">
+        {/* Fullscreen toolbar */}
+        <div className="flex-shrink-0 border-b border-border px-6 py-3 flex items-center justify-between bg-card">
+          <span className="text-sm font-semibold">{active?.name}</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsDark(d => !d)}
+              className="p-2 rounded-md border border-border hover:bg-muted transition-colors"
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="p-2 rounded-md border border-border hover:bg-muted transition-colors"
+              title="Exit fullscreen (Esc)"
+            >
+              <Minimize2 size={16} />
+            </button>
+          </div>
+        </div>
+        {/* Fullscreen content */}
+        <div className="flex-1 overflow-auto flex items-start justify-center p-10">
+          <Component />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex bg-background text-foreground">
       {/* ── Sidebar ── */}
@@ -184,7 +233,7 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
             <div className="border-b border-border px-6 py-4 flex items-start justify-between gap-4 flex-shrink-0">
               <div>
                 <h2 className="text-xl font-bold">{active.name}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">{active.description}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{active.description.slice(0, 70)}...</p>
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
@@ -207,6 +256,17 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
                   ))}
                 </div>
 
+                {/* Fullscreen toggle (only in preview) */}
+                {activeTab === 'preview' && (
+                  <button
+                    onClick={() => setIsFullscreen(true)}
+                    className="p-2 rounded-md border border-border hover:bg-muted transition-colors"
+                    title="Fullscreen preview"
+                  >
+                    <Maximize2 size={16} />
+                  </button>
+                )}
+
                 {/* Theme toggle */}
                 <button
                   onClick={() => setIsDark(d => !d)}
@@ -223,7 +283,7 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
               {/* ── PREVIEW TAB ── */}
               {activeTab === 'preview' && (
                 <div className="p-6 min-h-full">
-                  {/* Width indicator */}
+                  {/* Width indicator + reset */}
                   {previewWidth && (
                     <div className="flex items-center gap-3 mb-3">
                       <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border">
@@ -309,7 +369,7 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
 
                   <div className="flex-1 overflow-auto">
                     <SyntaxHighlighter
-                      language="tsx"
+                      language={getLanguage(activeFile)}
                       style={vscDarkPlus}
                       customStyle={{
                         margin: 0,
@@ -329,7 +389,7 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
 
               {/* ── INFO TAB ── */}
               {activeTab === 'info' && (
-                <div className="p-8 max-w-xl">
+                <div className="p-8 max-w-2xl">
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-5">
                     Component Info
                   </h3>
@@ -342,20 +402,76 @@ export default function DemoLayout({ components }: DemoLayoutProps) {
                   </div>
 
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-                    Demos
+                    Files
                   </h3>
 
-                  <ul className="space-y-2">
+                  <ul className="space-y-2 mb-8">
                     {fileNames.map((fname) => (
                       <li
                         key={fname}
                         className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-border bg-card"
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 flex-shrink-0" />
+                        <span
+                          className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold flex-shrink-0 ${
+                            fname.endsWith('.css')
+                              ? 'bg-blue-500/15 text-blue-400'
+                              : fname.endsWith('.ts') && !fname.endsWith('.tsx')
+                              ? 'bg-yellow-500/15 text-yellow-400'
+                              : 'bg-cyan-500/15 text-cyan-400'
+                          }`}
+                        >
+                          {fname.endsWith('.css') ? 'CSS' : fname.endsWith('.ts') && !fname.endsWith('.tsx') ? 'TS' : 'TSX'}
+                        </span>
                         <span className="text-sm font-mono text-foreground/80">{fname}</span>
                       </li>
                     ))}
                   </ul>
+
+                  {/* Media thumbnails */}
+                  {active.media && active.media.length > 0 && (
+                    <>
+                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+                        Media
+                      </h3>
+                      <div className="grid grid-cols-3 gap-3">
+                        {active.media.map((item, i) => (
+                          <div
+                            key={i}
+                            className="rounded-lg border border-border overflow-hidden bg-muted/30 aspect-video relative group"
+                          >
+                            {item.type === 'video' ? (
+                              <video
+                                src={item.url}
+                                className="w-full h-full object-cover"
+                                muted
+                                loop
+                                onMouseEnter={e => (e.currentTarget as HTMLVideoElement).play()}
+                                onMouseLeave={e => {
+                                  const v = e.currentTarget as HTMLVideoElement;
+                                  v.pause();
+                                  v.currentTime = 0;
+                                }}
+                              />
+                            ) : (
+                              <img
+                                src={item.url}
+                                alt={item.alt}
+                                className="w-full h-full object-cover"
+                              />
+                            )}
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <p className="text-[10px] text-white truncate">{item.alt}</p>
+                            </div>
+                            {item.type === 'video' && (
+                              <div className="absolute top-1.5 right-1.5 bg-black/50 rounded px-1 py-0.5 text-[9px] text-white font-mono">
+                                VIDEO
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
